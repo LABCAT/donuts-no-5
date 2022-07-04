@@ -4,6 +4,7 @@ import "p5/lib/addons/p5.sound";
 import * as p5 from "p5";
 import { Midi } from '@tonejs/midi'
 import PlayIcon from './functions/PlayIcon.js';
+import Donut from './classes/Donut.js';
 
 import audio from "../audio/donuts-no-5.ogg";
 import midi from "../audio/donuts-no-5.mid";
@@ -59,122 +60,57 @@ const P5SketchWithAudio = () => {
             }
         } 
 
+        p.shapeOptions = ['ellipse', 'equilateral', 'rect', 'pentagon', 'hexagon', 'octagon'];
+
+        p.bigDonuts = [];
+
+        p.bigDonutIndex = 0;
+
+        p.bigDonutShape = null;
+
         p.setup = () => {
             p.canvas = p.createCanvas(p.canvasWidth, p.canvasHeight);
 
             p.background(0);
             p.colorMode(p.HSB);
             p.rectMode(p.CENTER);
+
+            p.bigDonutShape = p.random(p.shapeOptions);
         }
 
         p.draw = () => {
             if(p.audioLoaded && p.song.isPlaying()){
-
+                p.background(0, 0, 0, 0.05);
+                for (let i = 0; i < p.bigDonuts.length; i++) {
+                    const donut = p.bigDonuts[i];
+                    if(Object.keys(donut).length) {
+                        donut.update();
+                        donut.draw();
+                    }
+                }
             }
         }
 
-        p.colourMode = 'rainbow';
+        p.colourMode = 'hue';
 
         p.colourModeOptions = ['rainbow', 'hue', 'monochromatic', 'complementary', 'triadic'];
 
-        p.colourModeHue = 0;
-
-        p.bgColour = 0;
-
-        p.xDonuts = p.random([3,4,6]);
-
-        p.donutSize = 0;
-
-        p.donutOpacity = 1;
-
-        p.shapeOptions = ['rect', 'ellipse', 'equilateral', 'pentagon', 'hexagon', 'octagon'];
-
-        p.rotationOptions = [24, 48];
-
         p.executeCueSet1 = (note) => {
-            
             const { currentCue } = note;
-            p.background(p.bgColour);
-            p.donutSize = p.donutSize + 4 ;
-            // if(currentCue < 65) {
-            //     const heightDivisor = p.xDonuts === 6 ? 8 : p.xDonuts === 4 ? 6 : 4;
-                
-            //     p.donutOpacity = 1 / 64 * currentCue;
-            // }
-            // else if(currentCue % 32 === 1) {
-            //     p.xDonuts = p.random([3,4,6]);
-            //     const options = p.colourModeOptions.slice(),
-            //         heightDivisor = p.xDonuts === 6 ? 8 : p.xDonuts === 4 ? 6 : 4;
-            //     options.splice(options.indexOf(p.colourMode), 1)
-            //     p.colourMode = p.random(options); 
-            //     p.colourModeHue = p.random(0, 360); 
-            //     // p.donutSize = p.height / heightDivisor;
-            // }
+            console.log(currentCue);
 
-            // if(currentCue < 185) {
-            //     p.background(p.bgColour);
-            // }
-            // else {
-            //     p.colourMode = 'rainbow';
-            // }
-
-            const yLoops = p.xDonuts % 3 === 0 ? (p.xDonuts / 3 * 2) : 3;
-
-            // for (let x = 1; x <= p.xDonuts; x++) {
-            //     for (let y = 1; y <= yLoops; y++) {
-            //         const numOfRotations = p.random(p.rotationOptions),
-            //             shape = p.random(p.shapeOptions), 
-            //             translateX = p.width / p.xDonuts * x - p.width / (p.xDonuts * 2),
-            //             translateY = p.height / yLoops * y - p.height / (yLoops * 2);
-            //         let colour = null;
-            //          switch (p.colourMode) {
-            //             case 'monochromatic':
-            //                 colour = p.color(p.colourModeHue, p.random(50, 100), p.random(50, 100), p.donutOpacity)
-            //                 break;
-            //             case 'complementary':
-            //                 const complementaryHue = p.colourModeHue + 180 > 360 ? p.colourModeHue - 180 : p.colourModeHue + 180,
-            //                     hue = p.random([p.colourModeHue, complementaryHue]);
-            //                 colour = p.color(hue, p.random(50, 100), p.random(50, 100), p.donutOpacity)
-            //                 break;
-            //             case 'triadic':
-            //                 const hue2 = p.colourModeHue + 120 > 360 ? p.colourModeHue - 120 : p.colourModeHue + 120,
-            //                     hue3 = hue2 + 120 > 360 ? p.colourModeHue - 240 : p.colourModeHue + 120,
-            //                     triadicHue = p.random([p.colourModeHue, hue2, hue3]);
-            //                 colour = p.color(triadicHue, p.random(50, 100), p.random(50, 100), p.donutOpacity)
-            //                 break;
-            //             default:
-            //                 colour = p.color(p.random(0, 360), 100, 100, p.donutOpacity)
-            //                 break;
-            //         }
-                    
-            //     }
-            // }
-            const colour = p.color(p.random(0, 360), 100, 100, p.donutOpacity),
-                numOfRotations = p.random(p.rotationOptions);
-
-            p.translate(p.width / 2, p.height / 2); 
-            p.drawDonut(colour, numOfRotations);
-            p.translate(-p.width / 2, -p.height / 2);
-        }
-
-        //this is where the donut is created
-        p.drawDonut = (colour, numOfRotations) => {
-            const  shape = p.random(p.shapeOptions);
-            p.stroke(colour);
-            p.strokeWeight(0.3);
-            p.noFill();
-            for (var i = 0; i < (numOfRotations * 2); i ++) {
-                if(p.colourMode === 'rainbow') {
-                    const colour = p.color(p.random(0, 360), 100, 100, p.donutOpacity)
-                    p.stroke(colour);
+            if([1, 9, 17, 25, 29].includes(currentCue % 32) || currentCue > 160) {
+                if(p.bigDonutIndex > 4){
+                    if(currentCue <= 160) {
+                        p.bigDonutIndex = 0;
+                        for (let i = 0; i < p.bigDonuts.length; i++) {
+                            p.bigDonuts[i] = {};
+                        }
+                    }
+                    p.bigDonutShape = currentCue > 160 ? 'equilateral' : p.random(p.shapeOptions);
                 }
-                for (var j = 0; j <=5; j++) {
-                    //call the function as detemined by the variable shape
-                    //rect and ellipse are built in p5.js
-                    //tri,hexa & octa are defined in this file
-                    p[shape](0, 20, p.donutSize + j, p.donutSize + j);
-                }
-                p.rotate(p.PI/numOfRotations);
+                p.bigDonuts[p.bigDonutIndex] = new Donut(p, p.random(0, 360), p.bigDonutShape);
+                p.bigDonutIndex++;
             }
         }
 
