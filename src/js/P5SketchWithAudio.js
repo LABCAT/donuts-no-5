@@ -4,6 +4,7 @@ import "p5/lib/addons/p5.sound";
 import * as p5 from "p5";
 import { Midi } from '@tonejs/midi'
 import PlayIcon from './functions/PlayIcon.js';
+import { TetradicColourCalculator, TriadicColourCalculator, ComplementaryColourCalculator } from './functions/ColourCalculators';
 import Donut from './classes/Donut.js';
 
 import audio from "../audio/donuts-no-5.ogg";
@@ -64,6 +65,8 @@ const P5SketchWithAudio = () => {
 
         p.bigDonuts = [];
 
+        p.bigDonutColourScheme = [];
+
         p.bigDonutIndex = 0;
 
         p.bigDonutShape = null;
@@ -76,6 +79,8 @@ const P5SketchWithAudio = () => {
             p.rectMode(p.CENTER);
 
             p.bigDonutShape = p.random(p.shapeOptions);
+            p.generateColourScheme();
+            console.log(p.bigDonutColourScheme);
         }
 
         p.draw = () => {
@@ -91,26 +96,57 @@ const P5SketchWithAudio = () => {
             }
         }
 
-        p.colourMode = 'hue';
-
-        p.colourModeOptions = ['rainbow', 'hue', 'monochromatic', 'complementary', 'triadic'];
-
         p.executeCueSet1 = (note) => {
             const { currentCue } = note;
-            console.log(currentCue);
 
             if([1, 9, 17, 25, 29].includes(currentCue % 32) || currentCue > 160) {
                 if(p.bigDonutIndex > 4){
                     if(currentCue <= 160) {
                         p.bigDonutIndex = 0;
+                        p.generateColourScheme();
                         for (let i = 0; i < p.bigDonuts.length; i++) {
                             p.bigDonuts[i] = {};
                         }
                     }
                     p.bigDonutShape = currentCue > 160 ? 'equilateral' : p.random(p.shapeOptions);
                 }
-                p.bigDonuts[p.bigDonutIndex] = new Donut(p, p.random(0, 360), p.bigDonutShape);
+                const colour = currentCue > 160 ? p.random(0, 360) : p.bigDonutColourScheme[p.bigDonutIndex];
+                p.bigDonuts[p.bigDonutIndex] = new Donut(p, colour, p.bigDonutShape);
                 p.bigDonutIndex++;
+            }
+        }
+
+        p.generateColourScheme = (mode = false) => {
+            const colourMode = mode ? mode : p.random(['random', 'rainbow', 'complementary', 'triadic', 'tetradic']),
+                startingHue = p.random(0, 360);
+            let hueSet = [];
+            
+            switch (colourMode) {
+                case 'complementary':
+                    hueSet = ComplementaryColourCalculator(p, startingHue);
+                    break;
+                case 'triadic':
+                    hueSet = TriadicColourCalculator(p, startingHue);
+                    break;
+                case 'tetradic':
+                    hueSet = TetradicColourCalculator(p, startingHue);
+                    break;
+                case 'rainbow':
+                    let hue = startingHue;
+                    for (let i = 0; i < 5; i++) {
+                        hueSet.push(hue);
+                        hue = hue + 30 > 360 ? hue - 330 : hue + 30;
+                    }
+                    break;
+                default:
+                    for (let i = 0; i < 5; i++) {
+                        hueSet.push(p.random(0, 360));
+                    }
+                    break;
+            }
+
+            for (let i = 0; i < 5; i++) {
+                p.bigDonutColourScheme[i] = hueSet[i % hueSet.length];
             }
         }
 

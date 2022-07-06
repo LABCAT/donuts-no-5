@@ -1,11 +1,17 @@
 export default class Donut {
-    constructor(p5, hue, shape) {
+    constructor(p5, hueOrColour, shape) {
         this.p = p5;
-        this.hue = hue;
+        this.colour = this.isObject(hueOrColour) ? hueOrColour : this.p.color(hueOrColour, 100, 100);
         this.shape = shape;
         this.numOfRotations = 24;
         this.size = 0;
     }
+
+    isObject(variable) {
+        return typeof variable === 'object' &&
+            variable !== null &&
+            !Array.isArray(variable);
+    }    
 
     update() {
         this.size = this.size + 4;
@@ -14,9 +20,7 @@ export default class Donut {
 
     draw() {
         this.p.translate(this.p.width / 2, this.p.height / 2); 
-        this.p.stroke(
-            this.p.color(this.hue, 100, 100)
-        );
+        this.p.stroke(this.colour);
         this.p.strokeWeight(0.02);
         this.p.noFill();
         for (var i = 0; i < (this.numOfRotations * 2); i ++) {
