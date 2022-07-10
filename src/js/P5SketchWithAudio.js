@@ -4,7 +4,6 @@ import "p5/lib/addons/p5.sound";
 import * as p5 from "p5";
 import { Midi } from '@tonejs/midi'
 import PlayIcon from './functions/PlayIcon.js';
-import SaveJSONToFile from './functions/SaveJSONToFile.js';
 import { TetradicColourCalculator, TriadicColourCalculator, ComplementaryColourCalculator } from './functions/ColourCalculators';
 import Donut from './classes/Donut.js';
 
@@ -117,6 +116,7 @@ const P5SketchWithAudio = () => {
             }
             p.background(0, 0, 0);
             if(p.seedMode) {
+                console.log(window.fxhash);
                 p.randomSeed(window.fxrand() * 1000);
                 p.donutShapeSet = p.generatePermutations(p.shapeOptions)[Math.floor(p.random(0, 720))];
                 p.donutHueSet = p.generatePermutations(p.hueOptions)[Math.floor(p.random(0, 720))];
