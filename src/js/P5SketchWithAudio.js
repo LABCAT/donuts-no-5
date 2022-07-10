@@ -28,6 +28,8 @@ const P5SketchWithAudio = () => {
 
         p.PPQ = 3840 * 4;
 
+        p.seedMode = true;
+
         p.loadMidi = () => {
             Midi.fromUrl(midi).then(
                 function(result) {
@@ -65,7 +67,7 @@ const P5SketchWithAudio = () => {
 
         p.colourModes = ['random', 'rainbow', 'complementary', 'triadic', 'tetradic'];
 
-        p.hueOptions = [0, 60, 120, 180, 240, 300];
+        p.hueOptions = [60, 120, 180, 240, 300, 360];
 
         p.donuts = [];
 
@@ -79,7 +81,9 @@ const P5SketchWithAudio = () => {
 
         p.donutShapeSet = [];
 
-        p.donutColourSchemeSet = [];
+        p.donutColourModeSet = [];
+
+        p.donutColourSchemeSets = [];
         
         p.donutHueSet = [];
 
@@ -105,26 +109,38 @@ const P5SketchWithAudio = () => {
 
         p.setup = () => {
             p.canvas = p.createCanvas(p.canvasWidth, p.canvasHeight);
-            p.background(0, 0, 0);
             p.colorMode(p.HSB);
             p.rectMode(p.CENTER);
-            console.log(window.fxhash);
-            console.log(window.fxrand());
-            p.randomSeed(window.fxrand() * 1000);
-            p.donutShapeSet = p.generatePermutations(p.shapeOptions)[Math.floor(p.random(0, 720))];
-            p.donutHueSet = p.generatePermutations(p.hueOptions)[Math.floor(p.random(0, 720))];
-            p.donutColourSchemeSet = p.generatePermutations(p.colourModes)[Math.floor(p.random(0, 120))];
-            console.log(p.donutShapeSet);
-            console.log(Math.floor(p.random(0, 720)));
-
-            p.currentShape = p.donutShapeSet[p.loopIndex];
-            p.generateColourScheme(p.donutColourSchemeSet[p.loopIndex]);
-            p.loopIndex++
-            for (let i = 0; i < 32; i++) {
-                // p.outroHues[i] =p.random(p.outroHueOptions[i][0], p.outroHueOptions[i][1]);
-                p.outroHues[i] = i;
+            
+            for (let i = 0; i < 40; i++) {
+                p.donuts[i] = {};
             }
+            p.background(0, 0, 0);
+            if(p.seedMode) {
+                p.randomSeed(window.fxrand() * 1000);
+                p.donutShapeSet = p.generatePermutations(p.shapeOptions)[Math.floor(p.random(0, 720))];
+                p.donutHueSet = p.generatePermutations(p.hueOptions)[Math.floor(p.random(0, 720))];
+                p.donutColourModeSet = p.generatePermutations(p.colourModes)[Math.floor(p.random(0, 120))];  
+            }
+            else {
+                for (let i = 0; i < 6; i++) {
+                    p.donutShapeSet[i] = p.random(p.shapeOptions);
+                    p.donutHueSet[i] = p.random(p.hueOptions);
+                    p.donutColourModeSet[i] = p.random(p.colourModes);
+                }
+            }
+            for (let i = 0; i < 5; i++) {
+                    p.donutColourSchemeSets[i] = p.generateColourScheme(p.donutColourModeSet[i]);
+                } 
+            for (let i = 0; i < 32; i++) {
+                p.outroHues[i] = p.random(0, p.donutHueSet[i % 6]);
+            }
+            p.currentShape = p.donutShapeSet[p.loopIndex];
+            p.currentColourScheme = p.donutColourSchemeSets[p.loopIndex];
+            p.loopIndex++
         }
+
+
 
         p.draw = () => {
             if(p.audioLoaded && p.song.isPlaying()){
@@ -141,31 +157,29 @@ const P5SketchWithAudio = () => {
 
         p.executeCueSet1 = (note) => {
             const { currentCue } = note;
-
             if([1, 9, 17, 25, 29].includes(currentCue % 32) || currentCue > 160) {
                 if(p.donutIndex > 4){
-                    if(currentCue <= 161) {
+                    if(currentCue <= 160) {
                         p.donutIndex = 0;
-                        p.generateColourScheme();
-                        for (let i = 0; i < p.donuts.length; i++) {
+                        for (let i = 0; i < 5; i++) {
                             p.donuts[i] = {};
                         }
                         p.currentShape = p.donutShapeSet[p.loopIndex];
-                        if(currentCue < 160) {
-                            p.generateColourScheme(p.donutColourSchemeSet[p.loopIndex]);
-                        }
+                        p.currentColourScheme = p.donutColourSchemeSets[p.loopIndex];
                         p.loopIndex++
+                    } else if (currentCue === 161) {
+                        p.currentShape = p.donutShapeSet[p.loopIndex];
                     }
                 }
                 const colour = currentCue > 160 ? p.outroHues[currentCue - 161] : p.currentColourScheme[p.donutIndex];
-                console.log(p.currentShape);
                 p.donuts[p.donutIndex] = new Donut(p, colour, p.currentShape);
                 p.donutIndex++;
             }
         }
 
         p.generateColourScheme = (mode = false) => {
-            const colourMode = mode ? mode : p.random(['random', 'rainbow', 'complementary', 'triadic', 'tetradic']);
+            const colourMode = mode ? mode : p.random(['random', 'rainbow', 'complementary', 'triadic', 'tetradic']),
+                colourScheme = [];
             let hueSet = [];
             
             switch (colourMode) {
@@ -193,8 +207,9 @@ const P5SketchWithAudio = () => {
             }
 
             for (let i = 0; i < 5; i++) {
-                p.currentColourScheme[i] = hueSet[i % hueSet.length];
+                colourScheme[i] = hueSet[i % hueSet.length];
             }
+            return colourScheme;
         }
 
         /*
@@ -274,6 +289,7 @@ const P5SketchWithAudio = () => {
             p.endShape(p.CLOSE);
         }
 
+        p.hasStarted = false;
 
         p.mousePressed = () => {
             if(p.audioLoaded){
@@ -282,10 +298,33 @@ const P5SketchWithAudio = () => {
                 } else {
                     if (parseInt(p.song.currentTime()) >= parseInt(p.song.buffer.duration)) {
                         p.reset();
+                        window.dataLayer.push(
+                            { 
+                                'event': 'play-animation',
+                                'animation': {
+                                    'title': document.title,
+                                    'location': window.location.href,
+                                    'action': 'replaying'
+                                }
+                            }
+                        );
                     }
                     document.getElementById("play-icon").classList.add("fade-out");
                     p.canvas.addClass("fade-in");
                     p.song.play();
+                    if (typeof window.dataLayer !== typeof undefined && !p.hasStarted){
+                        window.dataLayer.push(
+                            { 
+                                'event': 'play-animation',
+                                'animation': {
+                                    'title': document.title,
+                                    'location': window.location.href,
+                                    'action': 'start playing'
+                                }
+                            }
+                        );
+                        p.hasStarted = false
+                    }
                 }
             }
         }
@@ -308,7 +347,21 @@ const P5SketchWithAudio = () => {
         };
 
         p.reset = () => {
-
+            p.donutIndex = 0;
+            p.loopIndex = 0;
+            for (let i = 0; i < 40; i++) {
+                p.donuts[i] = {};
+            }
+            p.background(0, 0, 0);
+            p.currentShape = p.donutShapeSet[p.loopIndex];
+            p.currentColourScheme = p.donutColourSchemeSets[p.loopIndex];
+            
+            for (let i = 0; i < 5; i++) {
+                p.donuts[i] = {};
+            }
+            p.donuts[p.donutIndex] = new Donut(p, p.currentColourScheme[p.donutIndex], p.currentShape);
+            p.donutIndex++;
+            p.loopIndex++
         }
 
         p.updateCanvasDimensions = () => {

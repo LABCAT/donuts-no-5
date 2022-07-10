@@ -10,19 +10,23 @@
     />
     <title>Donuts No. 5</title>
     <!-- Google Tag Manager -->
-    <script>(function (w, d, s, l, i) {
-        w[l] = w[l] || []; w[l].push({
-          'gtm.start':
-            new Date().getTime(), event: 'gtm.js'
-        }); var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-      })(window, document, 'script', 'dataLayer', 'GTM-KJ52WKS');</script>
-      <script id="fxhash-snippet">
+    <script>
+      if(window.location.hostname) {
+        (function (w, d, s, l, i) {
+              w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                  new Date().getTime(), event: 'gtm.js'
+              }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                  'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+          })(window, document, 'script', 'dataLayer', 'GTM-KJ52WKS');
+      }
+    </script>
+    <!-- End Google Tag Manager -->
+    <script id="fxhash-snippet">
         //---- do not edit the following code (you can indent as you wish)
         let alphabet = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
         var fxhash = "oo" + Array(49).fill(0).map(_ => alphabet[(Math.random() * alphabet.length) | 0]).join('')
-        var fxhash = 'oojuN3Acr55kkuTdhdbALYo6dJQ96EBPDBFxroXjmK6EhYoTXS6';
         let b58dec = str => [...str].reduce((p, c) => p * alphabet.length + alphabet.indexOf(c) | 0, 0)
         let fxhashTrunc = fxhash.slice(2)
         let regex = new RegExp(".{" + ((fxhashTrunc.length / 4) | 0) + "}", 'g')
@@ -48,8 +52,7 @@
           console.log("fxhash: TRIGGER PREVIEW")
         }
         //---- /do not edit the following code
-      </script>
-    <!-- End Google Tag Manager -->
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

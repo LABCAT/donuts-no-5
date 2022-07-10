@@ -14,7 +14,8 @@ export default class Donut {
     }    
 
     update() {
-        this.size = this.size + 4;
+        const speed = (this.p.width + this.p.height) / (this.shape === 'ellipse' ? 200 : 500);
+        this.size = this.size + speed;
         this.hue = this.hue > 360 ? 0 : this.hue++;
     }
 
